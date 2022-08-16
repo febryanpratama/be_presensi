@@ -15,41 +15,40 @@ class AuthController extends Controller
     //
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8'
         ]);
 
-        if($validator->fails()){
-            return response()->json(ResponseFormatter::error(null, $validator->errors()));       
+        if ($validator->fails()) {
+            return response()->json(ResponseFormatter::error(null, $validator->errors()));
         }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password)
-         ]);
+        ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
-        
-        return response()->json(ResponseFormatter::success(['user' => $user, 'token' => $token,'token_type' => 'Bearer'], null));
+
+        return response()->json(ResponseFormatter::success(['user' => $user, 'token' => $token, 'token_type' => 'Bearer'], null));
     }
 
     public function login(Request $request)
     {
         // dd($request->all());
-        if (!Auth::attempt($request->only('email', 'password')))
-        {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()
-                ->json(ResponseFormatter::error(null,'Unauthorized'));
+                ->json(ResponseFormatter::error(null, 'Unauthorized'));
         }
 
         $user = User::where('email', $request['email'])->firstOrFail();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(ResponseFormatter::success(['user' => $user, 'token' => $token,'token_type' => 'Bearer'], null));
+        return response()->json(ResponseFormatter::success(['user' => $user, 'token' => $token, 'token_type' => 'Bearer'], null));
     }
 
     // method for user logout and delete token
